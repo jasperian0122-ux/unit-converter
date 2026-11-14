@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单位转换器 - 在线工具箱</title>
+  <style>
+    :root {
+      --primary: #1976d2;
+      --primary-light: #bbdefb;
+      --primary-dark: #115293;
+      --background: #f5f7fa;
+      --card: #ffffff;
+      --text: #2d3436;
+      --text-light: #636e72;
+      --border: #dee2e6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tohoma, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2.2rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-light);
+      margin-bottom: 30px;
+      font-size: 1rem;
+    }
+
+    .converter-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
+    }
+
+    .category-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .category-btn {
+      padding: 12px 20px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .category-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .category-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .category-btn.active:hover {
+      background: var(--primary-dark);
+    }
+
+    .convert-section {
+      margin-top: 25px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .input-group input:invalid {
+      border-color: #f44336;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: #e9ecef;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #dde6ed;
+    }
+
+    .result-area {
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 1px solid var(--border);
+    }
+
+    .result-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 80px;
+    }
+
+    .result-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .result-unit {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .result-equation {
+      color: var(--text-light);
+      font-size: 0.85rem;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-equation::before {
+      content: "=";
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .swap-btn {
+      margin: 15px 0;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .swap-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .swap-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .unit-category {
+      display: none;
+    }
+
+    .unit-category.active {
+      display: block;
+    }
+
+    .unit-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .unit-option {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+    }
+
+    .unit-option:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .unit-option.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .swap-indicator {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin: 10px 0;
+    }
+
+    @media (max-width: 480px) {
+      .converter-card {
+        padding: 20px 15px;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      .btn {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+      .result-value {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>单位转换器</h1>
+    <div class="subtitle">在线工具箱的一部分</div>
+
+    <div class="converter-card">
+      <div class="category-selector" id="categorySelector">
+        <!-- Categories will be injected by JS -->
+      </div>
+
+      <div id="lengthCategory" class="unit-category active">
+        <div class="input-group">
+          <label>输入数值</label>
+          <input type="number" id="inputValue" min="0" step="any" placeholder="输入数值">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary swap-btn" id="swapBtn">互换方向</button>
+        </div>
+
+        <div class="swap-indicator" id="swapIndicator">从米转为英尺</div>
+
+        <div class="unit-list" id="fromUnits">
+          <!-- From units will be injected -->
+        </div>
+
+        <div class="unit-list" id="toUnits">
+          <!-- To units will be injected -->
+        </div>
+
+        <div class="convert-section" id="convertSection">
+          <button class="btn btn-primary" id="convertBtn" disabled>转换</button>
+        </div>
+      </div>
+
+      <div id="weightCategory" class="unit-category">
+        <div class="input-group">
+          <label>输入数值</label>
+          <input type="number" id="weightInputValue" min="0" step="any" placeholder="输入数值">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary swap-btn" id="weightSwapBtn">互换方向</button>
+        </div>
+
+        <div class="swap-indicator" id="weightSwapIndicator">从千克转为磅</div>
+
+        <div class="unit-list" id="weightFromUnits">
+          <!-- From units will be injected -->
+        </div>
+
+        <div class="unit-list" id="weightToUnits">
+          <!-- To units will be injected -->
+        </div>
+
+        <div class="convert-section" id="weightConvertSection">
+          <button class="btn btn-primary" id="weightConvertBtn" disabled>转换</button>
+        </div>
+      </div>
+
+      <div id="temperatureCategory" class="unit-category">
+        <div class="input-group">
+          <label>输入数值</label>
+          <input type="number" id="tempInputValue" step="any" placeholder="输入数值">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary swap-btn" id="tempSwapBtn">互换方向</button>
+        </div>
+
+        <div class="swap-indicator" id="tempSwapIndicator">从摄氏度转为华氏度</div>
+
+        <div class="unit-list" id="tempFromUnits">
+          <!-- From units will be injected -->
+        </div>
+
+        <div class="unit-list" id="tempToUnits">
+          <!-- To units will be injected -->
+        </div>
+
+        <div class="convert-section" id="tempConvertSection">
+          <button class="btn btn-primary" id="tempConvertBtn" disabled>转换</button>
+        </div>
+      </div>
+
+      <div class="result-area" id="resultArea" style="display: none;">
+        <div class="result-card">
+          <div class="result-value" id="resultValue"></div>
+          <div class="result-unit" id="resultUnit"></div>
+          <div class="result-equation" id="resultEquation"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Unit conversion data
+    const unitCategories = {
+      length: {
+        name: '长度',
+        units: {
+          mm: { name: '毫米', toBase: v => v / 1000 },
+          cm: { name: '厘米', toBase: v => v / 100 },
+          m: { name: '米', toBase: v => v },
+          km: { name: '千米', toBase: v => v * 1000 },
+          in: { name: '英寸', toBase: v => v / 39.3701 },
+          ft: { name: '英尺', toBase: v => v / 3.28084 },
+          yd: { name: '码', toBase: v => v / 1.09361 },
+          mi: { name: '英里', toBase: v => v / 1609.34 }
+        },
+        baseUnit: 'm',
+        fromUnit: 'm',
+        toUnit: 'ft'
+      },
+      weight: {
+        name: '重量',
+        units: {
+          mg: { name: '毫克', toBase: v => v / 1000000 },
+          g: { name: '克', toBase: v => v / 1000 },
+          kg: { name: '千克', toBase: v => v },
+          lb: { name: '磅', toBase: v => v / 0.453592 },
+          oz: { name: '盎司', toBase: v => v / 16 }
+        },
+        baseUnit: 'kg',
+        fromUnit: 'kg',
+        toUnit: 'lb'
+      },
+      temperature: {
+        name: '温度',
+        units: {
+          c: { name: '摄氏度', toBase: v => v, fromBase: v => v },
+          f: { name: '华氏度', toBase: v => (v - 32) * 5/9, fromBase: v => v * 9/5 + 32 }
+        },
+        baseUnit: 'c',
+        fromUnit: 'c',
+        toUnit: 'f'
+      }
+    };
+
+    // State
+    let currentCategory = 'length';
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      initCategorySelector();
+      initConverter('length');
+    });
+
+    // Initialize category selector
+    function initCategorySelector() {
+      const selector = document.getElementById('categorySelector');
+      
+      for (const [key, category] of Object.entries(unitCategories)) {
+        const btn = document.createElement('button');
+        btn.className = 'category-btn';
+        btn.textContent = category.name;
+        btn.dataset.category = key;
+        btn.addEventListener('click', () => switchCategory(key));
+        selector.appendChild(btn);
+      }
+    }
+
+    // Switch between categories
+    function switchCategory(categoryKey) {
+      currentCategory = categoryKey;
+      
+      // Update category buttons
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === categoryKey);
+      });
+
+      // Hide all category sections
+      document.querySelectorAll('.unit-category').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // Show selected category
+      const selectedSection = document.getElementById(`${categoryKey}Category`);
+      if (selectedSection) {
+        selectedSection.classList.add('active');
+      }
+
+      // Initialize the selected converter
+      initConverter(categoryKey);
+    }
+
+    // Initialize converter for a category
+    function initConverter(categoryKey) {
+      const cat = unitCategories[categoryKey];
+      
+      // Render unit options
+      renderUnits('fromUnits', cat.units);
+      renderUnits('toUnits', cat.units);
+      
+      // Set default from/to units
+      selectDefaultUnit('fromUnits', cat.fromUnit);
+      selectDefaultUnit('toUnits', cat.toUnit);
+      
+      // Setup event listeners
+      setupEventListeners(categoryKey, cat);
+    }
+
+    // Render unit options
+    function renderUnits(containerId, units) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      for (const [code, unit] of Object.entries(units)) {
+        const option = document.createElement('div');
+        option.className = 'unit-option';
+        option.textContent = unit.name;
+        option.dataset.unit = code;
+        
+        option.addEventListener('click', () => selectUnit(containerId, code));
+        container.appendChild(option);
+      }
+    }
+
+    // Select a unit
+    function selectUnit(containerId, unitCode) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      // Remove selected class from all options
+      container.querySelectorAll('.unit-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selected class to clicked option
+      const selected = container.querySelector(`.unit-option[data-unit="${unitCode}"]`);
+      if (selected) {
+        selected.classList.add('selected');
+      }
+      
+      // Trigger conversion
+      triggerConversion();
+    }
+
+    // Select default unit
+    function selectDefaultUnit(containerId, unitCode) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      container.querySelectorAll('.unit-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      const selected = container.querySelector(`.unit-option[data-unit="${unitCode}"]`);
+      if (selected) {
+        selected.classList.add('selected');
+      }
+    }
+
+    // Setup event listeners for a category
+    function setupEventListeners(categoryKey, cat) {
+      const input = document.getElementById(categoryKey === 'length' ? 'inputValue' : 
+                                      categoryKey === 'weight' ? 'weightInputValue' : 'tempInputValue');
+      const fromUnits = document.getElementById(`${categoryKey}FromUnits`);
+      const toUnits = document.getElementById(`${categoryKey}ToUnits`);
+      const convertBtn = document.getElementById(`${categoryKey}ConvertBtn`);
+      const resultArea = document.getElementById('resultArea');
+      const resultValue = document.getElementById('resultValue');
+      const resultUnit = document.getElementById('resultUnit');
+      const resultEquation = document.getElementById('resultEquation');
+      const swapBtn = document.getElementById(categoryKey === 'length' ? 'swapBtn' : 
+                                              categoryKey === 'weight' ? 'weightSwapBtn' : 'tempSwapBtn');
+      const swapIndicator = document.getElementById(categoryKey === 'length' ? 'swapIndicator' : 
+                                              categoryKey === 'weight' ? 'weightSwapIndicator' : 'tempSwapIndicator');
+
+      if (!input || !fromUnits || !toUnits || !convertBtn) return;
+      
+      // Input event - enable/disable convert button
+      input.addEventListener('input', () => {
+        convertBtn.disabled = !input.validity.valid;
+      });
+      
+      // Convert button
+      convertBtn.addEventListener('click', () => {
+        const value = parseFloat(input.value);
+        if (isNaN(value)) return;
+        
+        const fromUnit = fromUnits.querySelector('.unit-option.selected')?.dataset.unit || cat.fromUnit;
+        const toUnit = toUnits.querySelector('.unit-option.selected')?.dataset.unit || cat.toUnit;
+        
+        if (!fromUnit || !toUnit) return;
+        
+        // Convert
+        let result;
+        if (categoryKey === 'temperature') {
+          const baseValue = cat.units[fromUnit].toBase ? cat.units[fromUnit].toBase(value) : value;
+          result = cat.units[toUnit].fromBase ? cat.units[toUnit].fromBase(baseValue) : baseValue;
+        } else {
+          const fromFactor = cat.units[fromUnit].toBase;
+          const toFactor = cat.units[toUnit].toBase;
+          result = (value / fromFactor) * toFactor;
+        }
+        
+        // Display result
+        resultValue.textContent = formatNumber(result);
+        resultUnit.textContent = cat.units[toUnit].name;
+        
+        // Display equation
+        resultEquation.innerHTML = `<span>${formatNumber(value)} ${cat.units[fromUnit].name}</span>=${formatNumber(result)} ${cat.units[toUnit].name}`;
+        
+        resultArea.style.display = 'block';
+      });
+      
+      // Swap button
+      swapBtn.addEventListener('click', () => {
+        const fromSelected = fromUnits.querySelector('.unit-option.selected');
+        const toSelected = toUnits.querySelector('.unit-option.selected');
+        
+        if (fromSelected && toSelected) {
+          // Swap the selected classes
+          fromSelected.classList.remove('selected');
+          toSelected.classList.remove('selected');
+          
+          // Reorder the elements in the DOM
+          fromSelected.classList.add('selected');
+          toUnits.insertBefore(fromSelected, toSelected.nextSibling);
+          
+          toSelected.classList.add('selected');
+          fromUnits.insertBefore(toSelected, fromSelected.nextSibling);
+          
+          // Update indicator
+          swapIndicator.textContent = `从${cat.units[fromSelected.dataset.unit].name}转为${cat.units[toSelected.dataset.unit].name}`;
+          
+          // Trigger conversion
+          triggerConversion();
+        }
+      });
+    }
+
+    // Trigger conversion
+    function triggerConversion() {
+      const input = document.getElementById(currentCategory === 'length' ? 'inputValue' : 
+                                          currentCategory === 'weight' ? 'weightInputValue' : 'tempInputValue');
+      const cat = unitCategories[currentCategory];
+      const fromUnits = document.getElementById(`${currentCategory}FromUnits`);
+      const toUnits = document.getElementById(`${currentCategory}ToUnits`);
+      
+      if (!input || !fromUnits || !toUnits) return;
+      
+      const value = parseFloat(input.value);
+      if (isNaN(value)) return;
+      
+      const fromUnit = fromUnits.querySelector('.unit-option.selected')?.dataset.unit || cat.fromUnit;
+      const toUnit = toUnits.querySelector('.unit-option.selected')?.dataset.unit || cat.toUnit;
+      
+      if (!fromUnit || !toUnit) return;
+      
+      // Convert
+      let result;
+      if (currentCategory === 'temperature') {
+        const baseValue = cat.units[fromUnit].toBase ? cat.units[fromUnit].toBase(value) : value;
+        result = cat.units[toUnit].fromBase ? cat.units[toUnit].fromBase(baseValue) : baseValue;
+      } else {
+        const fromFactor = cat.units[fromUnit].toBase;
+        const toFactor = cat.units[toUnit].toBase;
+        result = (value / fromFactor) * toFactor;
+      }
+      
+      // Display result
+      resultValue.textContent = formatNumber(result);
+      resultUnit.textContent = cat.units[toUnit].name;
+      
+      // Display equation
+      resultEquation.innerHTML = `<span>${formatNumber(value)} ${cat.units[fromUnit].name}</span>=${formatNumber(result)} ${cat.units[toUnit].name}`;
+      
+      resultArea.style.display = 'block';
+    }
+
+    // Format numbers
+    function formatNumber(num) {
+      if (isNaN(num)) return '0';
+      // Round to a reasonable precision and remove unnecessary trailing zeros
+      const rounded = Number(num.toFixed(6));
+      if (rounded === Math.round(rounded)) {
+        return String(Math.round(rounded));
+      }
+      return rounded.toString().replace(/([0-9])0+$/, '$1');
+    }
+  </script>
+</body>
+</html>
