@@ -20,7 +20,7 @@ if (!fs.existsSync(fileToDeploy)) {
 
 console.log('🚀 开始部署到 GitHub Pages...\n');
 
-// 第一步：初始化 git 仓库（如果还没有）
+// 检查是否已是 git 仓库
 let gitInitialized = false;
 try {
   execSync('git status', { stdio: 'ignore' });
@@ -38,29 +38,93 @@ try {
   }
 }
 
-// 第二步：添加文件
-console.log('📦 添加部署文件...');
+// 第三步：检查是否有提交需要跳过
+// 如果已经有提交记录，则跳过提交步骤
+let commitSkipped = false;
 try {
-  execSync('git add ' + fileToDeploy);
-  console.log('✅ 文件添加成功');
-} catch (addError) {
-  console.error('❌ 添加文件失败:', addError.message);
-  process.exit(1);
+  const logOutput = execSync('git log --oneline -1', { stdio: 'pipe' }).toString().trim();
+  if (logOutput) {
+    console.log('ℹ️ 已有提交记录，跳过提交步骤');
+    commitSkipped = true;
+  }
+} catch (e) {
+  // 仓库刚初始化，无提交记录，继续执行
 }
 
-// 第三步：提交
-console.log('💾 创建提交...');
-try {
-  execSync(`git commit -m "${commitMessage}"`);
-  console.log('✅ 提交成功');
-} catch (commitError) {
-  // 如果没有变更，可能已经提交过，忽略错误
-  const output = commitError.status ? String(commitError.status) : '';
-  if (!output.includes('nothing to commit')) {
+// 第四步：添加文件 (如果尚未添加)
+if (!commitSkipped) {
+  console.log('📦 添加部署文件...');
+  try {
+    execSync('git add ' + fileToDeploy);
+    console.log('✅ 文件添加成功');
+  } catch (addError) {
+    console.error('❌ 添加文件失败:', addError.message);
+    process.exit(1);
+  }
+  
+  // 第五步：提交
+  console.log('💾 创建提交...');
+  try {
+    execSync(`git commit -m "${commitMessage}"`);
+    console.log('✅ 提交成功');
+  } catch (commitError) {
     console.error('❌ 提交失败:', commitError.message);
     process.exit(1);
   }
-  console.log('ℹ️ 无新变更跳过提交');
+}
+
+// 第六步：设置远程并推送
+console.log('🔗 设置远程仓库并推送...');
+try {
+  const remoteUrl = execSync('git config --get remote.origin.url', { stdio: 'pipe' }).toString().trim();
+  
+  if (!remoteUrl) {
+    console.log('⚠️  未检测到远程仓库 URL');
+    console.log('   请手动添加远程仓库:');
+    console.log('   git remote add origin https://github.com/你的用户名/仓库名.git');
+    console.log('   然后重新运行: node deploy.js');
+    process.exit(1);
+  }
+  
+  console.log(`✅ 检测到远程仓库: ${remoteUrl}`);
+  
+  // 推送到主分支
+  console.log('🚀 正在推送到 GitHub...');
+  const pushResult = execSync('git push -u origin main', { stdio: 'inherit' });
+  console.log('\n✅ 推送成功!');
+  
+} catch (pushError) {
+  // 认证失败或其他错误
+  const errorMsg = pushError.message || String(pushError);
+  
+  if (errorMsg.includes('could not read Username') || errorMsg.includes('Authentication')) {
+    console.error('\n🔐 GitHub 认证失败');
+    console.log('='.repeat(50));
+    console.log('解决方案:');
+    console.log('1. 个人访问令牌 (PAT):');
+    console.log('   - 访问: https://github.com/settings/tokens/new');
+    console.log('   - 生成 token (勾选 repo 权限)');
+    console.log('   - 运行: git remote set-url origin https://token:x-oauth-basic@github.com/你的用户名/仓库名.git');
+    console.log('   - 然后: node deploy.js');
+    console.log('');
+    console.log('2. SSH 密钥:');
+    console.log('   - 生成 SSH key: ssh-keygen -t ed25519 -C "your-email@example.com"');
+    console.log('   - 添加到 GitHub: Settings -> SSH and GPG keys -> New SSH key');
+    console.log('   - 运行: git remote set-url origin git@github.com:你的用户名/仓库名.git');
+    console.log('   - 然后: node deploy.js');
+    console.log('');
+    console.log('3. 手动推送:');
+    console.log('   - 访问你的 GitHub 仓库');
+    console.log('   - 上传文件或使用 GitHub Web 界面推送');
+  } else {
+    console.error('\n❌ 推送失败:', errorMsg);
+  }
+  
+  console.log('\n💡 你可以直接手动运行:');
+  console.log('   git push -u origin main');
+  console.log('   或在 GitHub 网页上手动上传文件');
+  
+  process.exit(1);
 }
 
 // 第四步：设置远程（如果需要）
